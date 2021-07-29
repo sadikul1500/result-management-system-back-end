@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,14 +15,27 @@ namespace ResultSystem.Controllers
     public class UsersController : ControllerBase
     {
         private readonly UserContext _context;
+        private UserController _uc;// = new UserController();
         public UsersController(UserContext context)
         {
             _context = context;
+            _uc = new UserController(_context);
         }
         // GET: api/<UserController>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
+            var x = await _context.Users.ToListAsync();
+
+            foreach(var y in x)
+            {
+                //Console.WriteLine(y.Result);
+                y.Result = _uc.CalculateResult(y.Roll);
+                
+                _context.Entry(y).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+                //Console.WriteLine(y.Result);
+            }
 
             return await _context.Users.ToListAsync();
         }
