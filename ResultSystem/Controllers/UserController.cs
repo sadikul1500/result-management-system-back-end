@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
@@ -23,12 +23,24 @@ namespace ResultSystem.Controllers
         {
             _context = context;
         }
+        
 
         // GET: api/<UserController>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Result>>> GetResults()
         {
+            //var x = await _context.Result.ToListAsync();
 
+            //foreach (var property in x)
+            //{
+                // do something to modify 'item'
+                // based on the value of 'property'
+                // save to variable 'modifiedItem'
+
+                //modifiedItems.Add(modifiedItem)
+              //  property.
+
+            //}
             return await _context.Result.ToListAsync();
         }
 
@@ -86,17 +98,26 @@ namespace ResultSystem.Controllers
         
 
         // PUT api/<UserController>/5
-        [HttpPut("{id}")]
-        public async Task<ActionResult<Result>> Update( int id, Result result )
+        [HttpPut("{id}/{courseCode}")]
+        public async Task<ActionResult<Result>> Update( int id, int courseCode, Result result )
         {
-            if (id != result.Id)
-            {
-                return BadRequest();
+            Console.WriteLine(id + "iiiii" +  result.Roll);
+            //if (id != result.Roll)
+            //{
+              //  return BadRequest();
 
-            }
+            //}
 
             result.CourseResult = CalculateCourseResult(result); 
-            _context.Entry(result).State = EntityState.Modified;
+            var mod = await _context.Result.Where(x=> x.Roll == result.Roll && 
+            x.CourseCode == result.CourseCode).SingleOrDefaultAsync();
+
+            _context.Result.Remove(mod);
+            await _context.SaveChangesAsync();
+
+            _context.Result.Add(result);
+            
+            //_context.Entry(result).State = EntityState.Modified;
 
             var user = await _context.Users.Where(x => x.Roll == result.Roll).SingleOrDefaultAsync();
             user.Result = CalculateResult(result.Roll);
@@ -105,6 +126,7 @@ namespace ResultSystem.Controllers
 
             try
             {
+                Console.WriteLine(id + "try" +  result.Roll);
                 await _context.SaveChangesAsync();
             }
 
@@ -112,15 +134,17 @@ namespace ResultSystem.Controllers
             {
                 if (!UserExists(id))
                 {
+                    Console.WriteLine(id + "iiiiifff" +  result.Roll);
                     return NotFound();
                 }
 
                 else
                 {
+                    Console.WriteLine(id + "iiiiielse" +  result.Roll);
                     throw;
                 }
             }
-
+            Console.WriteLine(id + "iiiiiret" +  result.Roll);
             return NoContent();
         }
 
@@ -147,7 +171,7 @@ namespace ResultSystem.Controllers
             return 0.0;
         }
 
-        private double CalculateResult( int roll )
+        public double CalculateResult( int roll )
         {
             //return 3.4;
 
